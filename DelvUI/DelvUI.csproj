@@ -54,6 +54,9 @@
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
     </ItemGroup>
+    <ItemGroup>
+      <None Remove="Media\Fonts\SourceHanSans-Normal.ttf" />
+    </ItemGroup>
 
     <!-- Project References -->
     <ItemGroup>

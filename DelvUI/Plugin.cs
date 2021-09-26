@@ -102,14 +102,15 @@ namespace DelvUI
 
         private void BuildFont()
         {
-            string fontFile = Path.Combine(Path.GetDirectoryName(AssemblyLocation) ?? "", "Media", "Fonts", "big-noodle-too.ttf");
+            string fontFile = Path.Combine(Path.GetDirectoryName(AssemblyLocation) ?? "", "Media", "Fonts", "SourceHanSans-Normal.ttf");
             _fontBuilt = false;
 
             if (File.Exists(fontFile))
             {
                 try
                 {
-                    _pluginConfiguration.BigNoodleTooFont = ImGui.GetIO().Fonts.AddFontFromFileTTF(fontFile, 24);
+                    var io = ImGui.GetIO();
+                    _pluginConfiguration.BigNoodleTooFont = io.Fonts.AddFontFromFileTTF(fontFile, 24, null, io.Fonts.GetGlyphRangesChineseFull());
                     _fontBuilt = true;
                 }
                 catch (Exception ex)
