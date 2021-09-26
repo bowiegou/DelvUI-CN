@@ -1,39 +1,54 @@
-﻿using Dalamud.Game.Internal;
-using Dalamud.Plugin;
+﻿/*
+Copyright(c) 2021 talimity (https://github.com/talimity/mptimer)
+Modifications Copyright(c) 2021 DelvUI
+08/29/2021 - Mostly using original's code with minimal adaptations
+for DelvUI.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+using Dalamud.Game.Internal;
 using ImGuiNET;
 using System;
 using System.Linq;
 
 namespace DelvUI.Helpers
 {
-    internal class MpTickHelper
+    internal class MPTickHelper
     {
         public const double ServerTickRate = 3;
         protected const float PollingRate = 1 / 30f;
-        protected readonly DalamudPluginInterface PluginInterface;
         private int _lastMpValue = -1;
         protected double LastTickTime;
         protected double LastUpdate;
 
-        public MpTickHelper(DalamudPluginInterface pluginInterface)
+        public MPTickHelper()
         {
-            PluginInterface = pluginInterface;
-            PluginInterface.Framework.OnUpdateEvent += FrameworkOnOnUpdateEvent;
+            Plugin.Framework.OnUpdateEvent += FrameworkOnOnUpdateEvent;
         }
 
         public double LastTick => LastTickTime;
 
         private void FrameworkOnOnUpdateEvent(Framework framework)
         {
-            var player = PluginInterface.ClientState.LocalPlayer;
-
+            var player = Plugin.ClientState.LocalPlayer;
             if (player is null)
             {
                 return;
             }
 
             var now = ImGui.GetTime();
-
             if (now - LastUpdate < PollingRate)
             {
                 return;
@@ -65,7 +80,7 @@ namespace DelvUI.Helpers
                 return;
             }
 
-            PluginInterface.Framework.OnUpdateEvent -= FrameworkOnOnUpdateEvent;
+            Plugin.Framework.OnUpdateEvent -= FrameworkOnOnUpdateEvent;
         }
 
         public void Dispose()
@@ -74,6 +89,6 @@ namespace DelvUI.Helpers
             GC.SuppressFinalize(this);
         }
 
-        ~MpTickHelper() { Dispose(true); }
+        ~MPTickHelper() { Dispose(true); }
     }
 }

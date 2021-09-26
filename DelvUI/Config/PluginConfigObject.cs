@@ -1,14 +1,39 @@
-﻿using ImGuiNET;
+﻿using DelvUI.Config.Attributes;
+using DelvUI.Enums;
+using ImGuiNET;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Numerics;
+using System.Reflection;
 
 namespace DelvUI.Config
 {
-    [Serializable]
-    public abstract class PluginConfigObject
+    public abstract class PluginConfigObject : IOnChangeEventArgs
     {
+        [Checkbox("Enabled", separator = true)]
+        [Order(0)]
+        public bool Enabled = true;
+
+        [JsonIgnore]
+        public bool Portable
+        {
+            get
+            {
+                PortableAttribute attribute = (PortableAttribute)GetType().GetCustomAttribute(typeof(PortableAttribute), false);
+                return attribute == null || attribute.portable;
+            }
+        }
+
+        [JsonIgnore]
+        public bool Disableable
+        {
+            get
+            {
+                DisableableAttribute attribute = (DisableableAttribute)GetType().GetCustomAttribute(typeof(DisableableAttribute), false);
+                return attribute == null || attribute.disableable;
+            }
+        }
 
         protected bool ColorEdit4(string label, ref PluginConfigColor color)
         {
@@ -23,12 +48,50 @@ namespace DelvUI.Config
 
             return false;
         }
+
+        public static PluginConfigObject DefaultConfig()
+        {
+            Debug.Assert(false, "Static method 'DefaultConfig' not found !!!");
+            return null;
+        }
+
+        #region IOnChangeEventArgs
+
+        // sending event outside of the config
+        public event EventHandler<OnChangeBaseArgs> onValueChanged;
+
+        // received events from the node
+        public void onValueChangedRegisterEvent(OnChangeBaseArgs e)
+        {
+            onValueChanged?.Invoke(this, e);
+        }
+
+        #endregion
+    }
+
+    public abstract class MovablePluginConfigObject : PluginConfigObject
+    {
+        [DragInt2("Position", min = -4000, max = 4000)]
+        [Order(5)]
+        public Vector2 Position = Vector2.Zero;
+    }
+
+    [Serializable]
+    public abstract class AnchorablePluginConfigObject : MovablePluginConfigObject
+    {
+        [DragInt2("Size", min = 1, max = 4000)]
+        [Order(10)]
+        public Vector2 Size;
+
+        [Anchor("Anchor")]
+        [Order(15)]
+        public DrawAnchor Anchor = DrawAnchor.Center;
     }
 
     [Serializable]
     public class PluginConfigColor
     {
-        [JsonIgnore] private float[] _colorMapRatios = { -.8f, -.1f, .1f };
+        [JsonIgnore] private float[] _colorMapRatios = { -.8f, -.3f, .1f };
 
         [JsonIgnore] private Vector4 _vector;
 
@@ -36,7 +99,7 @@ namespace DelvUI.Config
         {
             _vector = vector;
 
-            if (colorMapRatios is { Length: >= 3 })
+            if (colorMapRatios != null && colorMapRatios.Length >= 3)
             {
                 _colorMapRatios = colorMapRatios;
             }
@@ -64,19 +127,16 @@ namespace DelvUI.Config
 
         [JsonIgnore] public uint Background { get; private set; }
 
-        [JsonIgnore] public uint LeftGradient { get; private set; }
+        [JsonIgnore] public uint TopGradient { get; private set; }
 
-        [JsonIgnore] public uint RightGradient { get; private set; }
-
-        [JsonIgnore] public Dictionary<string, uint> Map { get; private set; }
+        [JsonIgnore] public uint BottomGradient { get; private set; }
 
         private void Update()
         {
             Base = ImGui.ColorConvertFloat4ToU32(_vector);
             Background = ImGui.ColorConvertFloat4ToU32(_vector.AdjustColor(_colorMapRatios[0]));
-            LeftGradient = ImGui.ColorConvertFloat4ToU32(_vector.AdjustColor(_colorMapRatios[1]));
-            RightGradient = ImGui.ColorConvertFloat4ToU32(_vector.AdjustColor(_colorMapRatios[2]));
-            Map = new Dictionary<string, uint> { ["base"] = Base, ["background"] = Background, ["gradientLeft"] = LeftGradient, ["gradientRight"] = RightGradient };
+            TopGradient = ImGui.ColorConvertFloat4ToU32(_vector.AdjustColor(_colorMapRatios[1]));
+            BottomGradient = ImGui.ColorConvertFloat4ToU32(_vector.AdjustColor(_colorMapRatios[2]));
         }
     }
 }
