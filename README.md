@@ -1,3 +1,7 @@
+
+## This is a fork to support chinese character rendering
+## 这是一个允许简繁中文字体正常渲染的分支
+
 ***
 **A plugin for Dalamud that aims to replicate the ElvUI experience in FFXIV. A lot of inspiration is taken from ToxiUI.**  
 ***
